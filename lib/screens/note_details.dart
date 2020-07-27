@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'dart:async';
 import 'package:notesmanagementflutterapp/models/note.dart';
 import 'package:notesmanagementflutterapp/utils/database_helper.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:toast/toast.dart';
+
 
 class NoteDetails extends StatefulWidget {
   final String appBarTitle;
@@ -26,17 +26,14 @@ class _NoteDetailsState extends State<NoteDetails> {
   static var _priorities = ['High', 'Low'];
   TextEditingController titleController = TextEditingController();
   TextEditingController detailsController = TextEditingController();
+   var minPadding=7.0;
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = Theme.of(context).textTheme.title;
+    TextStyle textStyle = Theme.of(context).textTheme.subtitle1;
     titleController.text = note.title;
     detailsController.text = note.description;
-    return WillPopScope(
-        onWillPop: () {
-          moveToLastScreen();
-        },
-        child: Scaffold(
+    return Scaffold(
           appBar: AppBar(
             title: Text(appBarTitle),
             leading: IconButton(
@@ -48,7 +45,7 @@ class _NoteDetailsState extends State<NoteDetails> {
           body: Form(
             key: _formKeyForNote,
           child:Padding(
-            padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
+            padding: EdgeInsets.only(top: 10.0, left: minPadding, right: minPadding),
             child: ListView(
 
               children: [
@@ -72,7 +69,7 @@ class _NoteDetailsState extends State<NoteDetails> {
                       }),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  padding: EdgeInsets.only(left: 10.0, right: minPadding, bottom: minPadding),
                   child: TextFormField(
                     controller: titleController,
                     style: textStyle,
@@ -83,27 +80,29 @@ class _NoteDetailsState extends State<NoteDetails> {
                       }
                       return null;
                     },
-
-                      onChanged: (value) {
+                    onChanged: (value) {
                       debugPrint("Something happen in title field");
                       updateTitle();
                     },
                     decoration: InputDecoration(
                         labelText: 'Title',
+                        fillColor: Colors.white,
+                        filled: true,
                         labelStyle: textStyle,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5.0))),
+                      border: InputBorder.none,
+                       ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  padding: EdgeInsets.only(bottom: 10.0,left: minPadding, right: minPadding),
                   child: TextFormField(
                     controller: detailsController,
+                    maxLines: 20,
                     style: textStyle,
                     validator: ( value) {
-                      if (value.isEmpty) {
-                        debugPrint("Description is Empty");
-                        return 'Please Enter Description';
+                      if (value.length>=2000) {
+                        debugPrint("Description is too long");
+                        return 'Please Enter short Description';
                       }
                       return null;
                     },
@@ -113,13 +112,16 @@ class _NoteDetailsState extends State<NoteDetails> {
                     },
                     decoration: InputDecoration(
                         labelText: 'Details',
+                        fillColor: Colors.white,
+                        filled: true,
+                        border: InputBorder.none,
+                        alignLabelWithHint: true,
                         labelStyle: textStyle,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(5.0))),
+                       ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+                  padding: EdgeInsets.only(left: minPadding, right: minPadding),
                   child: Row(
                     children: [
                       Expanded(
@@ -159,7 +161,7 @@ class _NoteDetailsState extends State<NoteDetails> {
               ],
             ),
           ),
-        )));
+        ));
   }
 
   void moveToLastScreen() {
@@ -201,7 +203,7 @@ class _NoteDetailsState extends State<NoteDetails> {
   void _save() async {
     moveToLastScreen();
     debugPrint("in Save Method");
-    note.date = DateFormat.yMMMd().format(DateTime.now());
+    note.date = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
     int result;
     if (note.id != null) {
       result = await helper.updateNote(note);
@@ -209,28 +211,27 @@ class _NoteDetailsState extends State<NoteDetails> {
       result = await helper.insertNote(note);
     }
     if (result != 0) {
-      _showDailog('Status', 'Note Saved Successfully');
+      Toast.show("Note Saved Successfully ", context, duration: Toast.LENGTH_LONG);
     } else {
-      _showDailog('Status', 'Problem Saving Note');
+      Toast.show("Something Went Wrong", context, duration: Toast.LENGTH_LONG);
     }
   }
 
   void _delete() async {
     moveToLastScreen();
     if (note.id == null) {
-      _showDailog('Status', 'No Note was Deleted');
+      _showCustomDailog('Status', 'No Note was Deleted');
       return;
     } else {
       int result = await helper.deleteNote(note.id);
       if (result != 0) {
-        _showDailog('Status', 'Note Delete Successfully');
+        _showCustomDailog('Status', 'Note Delete Successfully');
       } else {
-        _showDailog('Status', 'Error Occurred while deleting the Note');
+        _showCustomDailog('Status', 'Error Occurred while deleting the Note');
       }
     }
   }
-
-  void _showDailog(String title, String msg) {
+  void _showCustomDailog(String title, String msg) {
     AlertDialog alertDialog = AlertDialog(
       title: Text(title),
       content: Text(msg),

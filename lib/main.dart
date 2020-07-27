@@ -11,7 +11,7 @@ class NotesManagement extends StatelessWidget{
    return MaterialApp(
      title: 'Notes Management',
      debugShowCheckedModeBanner: false,
-     theme: ThemeData(primarySwatch: Colors.deepPurple),
+     theme: ThemeData(primarySwatch: Colors.blue),
      home: NoteList(),
    );
   }

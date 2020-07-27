@@ -1,9 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:notesmanagementflutterapp/screens/note_details.dart';
 import 'dart:async';
 import 'package:notesmanagementflutterapp/models/note.dart';
 import 'package:notesmanagementflutterapp/utils/database_helper.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:toast/toast.dart';
 
 class NoteList extends StatefulWidget {
   @override
@@ -29,8 +32,8 @@ class _NoteListState extends State<NoteList> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           debugPrint("FAB clicked");
-          navigateToDetail(Note('', '', 2), 'New Note');
-        },
+          navigateToDetail(Note('', '','', 2), 'New Note');
+          },
         tooltip: 'Add Note',
         child: Icon(Icons.add),
       ),
@@ -86,9 +89,27 @@ class _NoteListState extends State<NoteList> {
     return ListView.builder(
         itemCount: count,
         itemBuilder: (BuildContext context, int position) {
-          return Card(
-            color: Colors.white,
-            elevation: 2.0,
+          return Slidable(key: ValueKey(position),
+            actionPane: SlidableDrawerActionPane(),
+            actions: [
+              IconSlideAction(caption: 'Delete',
+                color: Colors.red,
+                icon: Icons.delete,
+                closeOnTap: true,
+                onTap: (){
+                  _delete(context, noteList[position]);
+                  },
+              ),
+              IconSlideAction(caption: 'update',
+                color: Colors.green,
+                icon: Icons.edit,
+                closeOnTap: false,
+                onTap: (){
+                  Toast.show("update On $position ", context, duration: Toast.LENGTH_SHORT,gravity: Toast.BOTTOM);
+                  navigateToDetail(this.noteList[position], 'Edit Note');
+                },),
+            ],
+            dismissal: SlidableDismissal(child: SlidableDrawerDismissal(),),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor:
@@ -101,15 +122,7 @@ class _NoteListState extends State<NoteList> {
               ),
               subtitle: Text(this.noteList[position].date),
 
-              trailing: GestureDetector(
-                child: Icon(
-                  Icons.delete,
-                  color: Colors.grey,
-                ),
-                onTap: () {
-                  _delete(context, noteList[position]);
-                },
-              ),
+
               onTap: () {
                 debugPrint("Item Tapped");
                 navigateToDetail(this.noteList[position], 'Edit Note');
