@@ -105,12 +105,6 @@ class _NoteDetailsState extends State<NoteDetails> {
                   ),
 
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 10.0, right: minPadding, bottom: minPadding),
-                  child: Container(
-                    child: _image==null? Text(''):Image.file(_image),
-                  ),
-                ),
 
                 Padding(
                   padding: EdgeInsets.only(left: 10.0, right: minPadding, bottom: minPadding),

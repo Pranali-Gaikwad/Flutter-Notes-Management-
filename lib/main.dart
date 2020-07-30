@@ -5,15 +5,14 @@ main(){
   runApp(NotesManagement());
 }
 
-class NotesManagement extends StatelessWidget{
+class NotesManagement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Notes Management',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.deepPurple),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: NoteList(),
     );
   }
-
 }
