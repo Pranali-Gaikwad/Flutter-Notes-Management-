@@ -1,9 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
 import 'package:intl/intl.dart';
 import 'package:notesmanagementflutterapp/models/note.dart';
 import 'package:notesmanagementflutterapp/utils/database_helper.dart';
 import 'package:toast/toast.dart';
+
+
+import 'dart:async';
+
 
 
 class NoteDetails extends StatefulWidget {
@@ -27,6 +35,15 @@ class _NoteDetailsState extends State<NoteDetails> {
   TextEditingController titleController = TextEditingController();
   TextEditingController detailsController = TextEditingController();
    var minPadding=7.0;
+  File _image;
+
+  Future getImage() async{
+    var image =await ImagePicker.pickImage(source: ImageSource.camera);
+    setState(() {
+      _image=image;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +56,8 @@ class _NoteDetailsState extends State<NoteDetails> {
             leading: IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
-                  moveToLastScreen();
+                 // _onBackPressed();
+                 moveToLastScreen();
                 }),
           ),
           body: Form(
@@ -47,27 +65,53 @@ class _NoteDetailsState extends State<NoteDetails> {
           child:Padding(
             padding: EdgeInsets.only(top: 10.0, left: minPadding, right: minPadding),
             child: ListView(
-
               children: [
-                ListTile(
-                  title: DropdownButton(
-                      items: _priorities.map(
-                        (String dropDownStringItem) {
-                          return DropdownMenuItem<String>(
-                            value: dropDownStringItem,
-                            child: Text(dropDownStringItem),
-                          );
-                        },
-                      ).toList(),
-                      style: textStyle,
-                      value: getPriorityAsString(note.priority),
-                      onChanged: (valueSelectedByUser) {
-                        setState(() {
-                          debugPrint('Value selected is $valueSelectedByUser');
-                          updatePriorityAsInt(valueSelectedByUser);
-                        });
-                      }),
+                Padding(
+                  padding: EdgeInsets.only(left: 10.0, right: minPadding),
+                  child: Row(
+                    children: [
+                      Expanded( child: DropdownButton(
+                          items: _priorities.map(
+                                (String dropDownStringItem) {
+                              return DropdownMenuItem<String>(
+                                value: dropDownStringItem,
+                                child: Text(dropDownStringItem),
+                              );
+                            },
+                          ).toList(),
+                          style: textStyle,
+                          value: getPriorityAsString(note.priority),
+                          onChanged: (valueSelectedByUser) {
+                            setState(() {
+                              debugPrint('Value selected is $valueSelectedByUser');
+                              updatePriorityAsInt(valueSelectedByUser);
+                            });
+                          }),
+                      ),
+                      Container(
+                        width: 5.0,
+                      ),
+                      Expanded(
+                        child: IconButton(
+                          icon: Icon(Icons.photo_camera),
+                          tooltip: 'Add Image Note',
+                          onPressed: (){
+                            getImage();
+                          },
+                        ),
+                      )
+                    ],
+
+                  ),
+
                 ),
+                Padding(
+                  padding: EdgeInsets.only(left: 10.0, right: minPadding, bottom: minPadding),
+                  child: Container(
+                    child: _image==null? Text(''):Image.file(_image),
+                  ),
+                ),
+
                 Padding(
                   padding: EdgeInsets.only(left: 10.0, right: minPadding, bottom: minPadding),
                   child: TextFormField(
@@ -89,7 +133,7 @@ class _NoteDetailsState extends State<NoteDetails> {
                         fillColor: Colors.white,
                         filled: true,
                         labelStyle: textStyle,
-                      border: InputBorder.none,
+                        border: InputBorder.none,
                        ),
                   ),
                 ),
@@ -165,7 +209,17 @@ class _NoteDetailsState extends State<NoteDetails> {
   }
 
   void moveToLastScreen() {
-    Navigator.pop(context, true);
+      Navigator.pop(context, true);
+  }
+  Future<bool> _onBackPressed(){
+    return showDialog(context: context,
+    builder: (context)=>AlertDialog(
+      title: Text('Do you want to save the Note?'),
+      actions: [
+        FlatButton(onPressed:()=> Navigator.pop(context, false), child: Text('yes')),
+        FlatButton(onPressed:()=> Navigator.pop(context, true), child: Text('No'))
+      ],
+    ));
   }
 
   void updatePriorityAsInt(String value) {
@@ -236,6 +290,6 @@ class _NoteDetailsState extends State<NoteDetails> {
       title: Text(title),
       content: Text(msg),
     );
-    showDialog(context: context, builder: (_) => alertDialog);
+    showDialog(context: context, builder: (_) => alertDialog); 
   }
 }
